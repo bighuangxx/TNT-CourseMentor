@@ -42,3 +42,10 @@ export function delRemark(remarkId) {
     method: 'delete'
   })
 }
+// 查询当前用户的评论列表
+export function listRemarkByUsername() {
+  return request({
+    url: '/system/remark/listByUsername',
+    method: 'get'
+  })
+}

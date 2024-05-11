@@ -3,7 +3,7 @@
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.SysRemarkMapper">
-    
+
     <resultMap type="SysRemark" id="SysRemarkResult">
         <result property="remarkId"    column="remark_id"    />
         <result property="parentId"    column="parent_id"    />
@@ -30,16 +30,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="selectSysRemarkList" parameterType="SysRemark" resultMap="SysRemarkResult">
         <include refid="selectSysRemarkVo"/>
-        <where>  
+        <where>
             <if test="remarkName != null  and remarkName != ''"> and remark_name like concat('%', #{remarkName}, '%')</if>
         </where>
     </select>
-    
+
     <select id="selectSysRemarkByRemarkId" parameterType="Long" resultMap="SysRemarkResult">
         <include refid="selectSysRemarkVo"/>
         where remark_id = #{remarkId}
     </select>
-        
+
+    <select id="selectSysRemarkListByUsername" parameterType="String" resultMap="SysRemarkResult">
+        <include refid="selectSysRemarkVo"/>
+        <where>
+            <if test="createBy != null and createBy != ''"> and create_by = #{createBy}</if>
+        </where>
+    </select>
     <insert id="insertSysRemark" parameterType="SysRemark" useGeneratedKeys="true" keyProperty="remarkId">
         insert into sys_remark
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -108,7 +114,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <delete id="deleteSysRemarkByRemarkIds" parameterType="String">
-        delete from sys_remark where remark_id in 
+        delete from sys_remark where remark_id in
         <foreach item="remarkId" collection="array" open="(" separator="," close=")">
             #{remarkId}
         </foreach>

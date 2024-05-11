@@ -10,19 +10,19 @@ import com.ruoyi.system.service.ISysRemarkService;
 
 /**
  * 评论Service业务层处理
- * 
+ *
  * @author ruoyi
  * @date 2024-05-11
  */
 @Service
-public class SysRemarkServiceImpl implements ISysRemarkService 
+public class SysRemarkServiceImpl implements ISysRemarkService
 {
     @Autowired
     private SysRemarkMapper sysRemarkMapper;
 
     /**
      * 查询评论
-     * 
+     *
      * @param remarkId 评论主键
      * @return 评论
      */
@@ -34,7 +34,7 @@ public class SysRemarkServiceImpl implements ISysRemarkService
 
     /**
      * 查询评论列表
-     * 
+     *
      * @param sysRemark 评论
      * @return 评论
      */
@@ -43,10 +43,20 @@ public class SysRemarkServiceImpl implements ISysRemarkService
     {
         return sysRemarkMapper.selectSysRemarkList(sysRemark);
     }
+    /**
+     * 查询指定用户的评论列表
+     *
+     * @param username 用户名
+     * @return 评论列表
+     */
+    @Override
+    public List<SysRemark> selectSysRemarkListByUsername(String username) {
 
+        return sysRemarkMapper.selectSysRemarkListByUsername(username);
+    }
     /**
      * 新增评论
-     * 
+     *
      * @param sysRemark 评论
      * @return 结果
      */
@@ -59,7 +69,7 @@ public class SysRemarkServiceImpl implements ISysRemarkService
 
     /**
      * 修改评论
-     * 
+     *
      * @param sysRemark 评论
      * @return 结果
      */
@@ -72,7 +82,7 @@ public class SysRemarkServiceImpl implements ISysRemarkService
 
     /**
      * 批量删除评论
-     * 
+     *
      * @param remarkIds 需要删除的评论主键
      * @return 结果
      */
@@ -84,7 +94,7 @@ public class SysRemarkServiceImpl implements ISysRemarkService
 
     /**
      * 删除评论信息
-     * 
+     *
      * @param remarkId 评论主键
      * @return 结果
      */

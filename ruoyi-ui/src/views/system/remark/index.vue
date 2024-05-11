@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+    <!-- Search Form -->
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="名称" prop="remarkName">
         <el-input
@@ -10,12 +11,14 @@
         />
       </el-form-item>
       <el-form-item>
-	    <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
+    <!-- Buttons Row -->
     <el-row :gutter="10" class="mb8">
+      <!-- Add Remark Button -->
       <el-col :span="1.5">
         <el-button
           type="primary"
@@ -26,6 +29,7 @@
           v-hasPermi="['system:remark:add']"
         >新增</el-button>
       </el-col>
+      <!-- Expand/Collapse Button -->
       <el-col :span="1.5">
         <el-button
           type="info"
@@ -35,9 +39,21 @@
           @click="toggleExpandAll"
         >展开/折叠</el-button>
       </el-col>
+      <!-- My Remarks Button -->
+      <el-col :span="1.5">
+        <el-button
+          type="info"
+          plain
+          icon="el-icon-sort"
+          size="mini"
+          @click="toggleFilterMyRemarks"
+        >{{ filteringMyRemarks ? '取消筛选' : '我的评论' }}</el-button>
+      </el-col>
+      <!-- Right Toolbar -->
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
+    <!-- Remarks Table -->
     <el-table
       v-if="refreshTable"
       v-loading="loading"
@@ -80,7 +96,7 @@
       </el-table-column>
     </el-table>
 
-    <!-- 添加或修改评论对话框 -->
+    <!-- Add/Update Remark Dialog -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="名称" prop="remarkName">
@@ -107,9 +123,8 @@
     </el-dialog>
   </div>
 </template>
-
 <script>
-import { listRemark, getRemark, delRemark, addRemark, updateRemark } from "@/api/system/remark";
+import { listRemark, getRemark, delRemark, addRemark, updateRemark, listRemarkByUsername } from "@/api/system/remark";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
@@ -121,46 +136,56 @@ export default {
   },
   data() {
     return {
-      // 遮罩层
+      // Loading state
       loading: true,
-      // 显示搜索条件
+      // Show search state
       showSearch: true,
-      // 评论表格数据
+      // Filter my remarks state
+      filteringMyRemarks: false,
+      // Remarks data
       remarkList: [],
-      // 评论树选项
+      // Remark tree options
       remarkOptions: [],
-      // 弹出层标题
+      // Dialog title
       title: "",
-      // 是否显示弹出层
+      // Dialog visibility
       open: false,
-      // 是否展开，默认全部展开
+      // Expand all rows in table
       isExpandAll: true,
-      // 重新渲染表格状态
+      // Refresh table flag
       refreshTable: true,
-      // 查询参数
+      // Query parameters
       queryParams: {
         remarkName: null,
       },
-      // 表单参数
+      // Form data
       form: {},
-      // 表单校验
-      rules: {
-      }
+      // Form validation rules
+      rules: {}
     };
   },
   created() {
     this.getList();
   },
   methods: {
-    /** 查询评论列表 */
-    getList() {
+    listMyRemarks() {
       this.loading = true;
-      listRemark(this.queryParams).then(response => {
+      listRemarkByUsername().then(response => {
         this.remarkList = this.handleTree(response.data, "remarkId", "parentId");
         this.loading = false;
       });
     },
-    /** 转换评论数据结构 */
+    getList() {
+      this.loading = true;
+      if (this.filteringMyRemarks) {
+        this.listMyRemarks();
+      } else {
+        listRemark(this.queryParams).then(response => {
+          this.remarkList = this.handleTree(response.data, "remarkId", "parentId");
+          this.loading = false;
+        });
+      }
+    },
     normalizer(node) {
       if (node.children && !node.children.length) {
         delete node.children;
@@ -171,7 +196,6 @@ export default {
         children: node.children
       };
     },
-	/** 查询评论下拉树结构 */
     getTreeselect() {
       listRemark().then(response => {
         this.remarkOptions = [];
@@ -180,12 +204,10 @@ export default {
         this.remarkOptions.push(data);
       });
     },
-    // 取消按钮
     cancel() {
       this.open = false;
       this.reset();
     },
-    // 表单重置
     reset() {
       this.form = {
         remarkId: null,
@@ -208,16 +230,13 @@ export default {
       };
       this.resetForm("form");
     },
-    /** 搜索按钮操作 */
     handleQuery() {
       this.getList();
     },
-    /** 重置按钮操作 */
     resetQuery() {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-    /** 新增按钮操作 */
     handleAdd(row) {
       this.reset();
       this.getTreeselect();
@@ -229,7 +248,6 @@ export default {
       this.open = true;
       this.title = "添加评论";
     },
-    /** 展开/折叠操作 */
     toggleExpandAll() {
       this.refreshTable = false;
       this.isExpandAll = !this.isExpandAll;
@@ -237,7 +255,6 @@ export default {
         this.refreshTable = true;
       });
     },
-    /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
       this.getTreeselect();
@@ -250,7 +267,6 @@ export default {
         this.title = "修改评论";
       });
     },
-    /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
@@ -270,14 +286,17 @@ export default {
         }
       });
     },
-    /** 删除按钮操作 */
     handleDelete(row) {
-      this.$modal.confirm('是否确认删除评论编号为"' + row.remarkId + '"的数据项？').then(function() {
+      this.$modal.confirm('是否确认删除评论编号为"' + row.remarkId + '"的数据项？').then(() => {
         return delRemark(row.remarkId);
       }).then(() => {
         this.getList();
         this.$modal.msgSuccess("删除成功");
       }).catch(() => {});
+    },
+    toggleFilterMyRemarks() {
+      this.filteringMyRemarks = !this.filteringMyRemarks;
+      this.getList();
     }
   }
 };

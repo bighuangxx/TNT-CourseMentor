@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import java.text.DecimalFormat;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -22,7 +23,7 @@ import com.ruoyi.common.utils.poi.ExcelUtil;
 
 /**
  * 评论Controller
- * 
+ *
  * @author ruoyi
  * @date 2024-05-11
  */
@@ -75,6 +76,46 @@ public class SysRemarkController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody SysRemark sysRemark)
     {
+        long id=getUserId();
+        String str = Long.toString(id);
+        sysRemark.setCreateBy(str);
+        sysRemark.setStat(1L);
+
+        if (sysRemark.getParentId() != null) {
+            SysRemark parentRemark = sysRemarkService.selectSysRemarkByRemarkId(sysRemark.getParentId());
+            if (parentRemark != null) {
+
+                long stati=(parentRemark.getStat()+1L);
+
+                sysRemark.setStat(stati > 4 ? 4 : stati);
+
+                // 获取父级评论名称
+                if(stati==3) {
+                    String parentRemarkName = parentRemark.getRemarkName();
+                    // 顺延父级评论名称作为当前评论名称
+
+                    sysRemark.setRemarkName(parentRemarkName);
+
+                }
+                if(stati==2){
+
+                    // 获取父级评论名称
+                    String parentRemarkName = parentRemark.getRemarkName();
+                    // 顺延父级评论名称作为当前评论名称
+                    sysRemark.setRemarkName(parentRemarkName + " - " + sysRemark.getRemarkName());
+                }
+                if(stati>=3){
+                    if (sysRemark.getLikeCnt() == null) {
+                        sysRemark.setLikeCnt(0L);
+                    }
+
+
+                    if (sysRemark.getReportCnt() == null) {
+                        sysRemark.setReportCnt(0L);
+                    }
+                }
+            }
+        }
         return toAjax(sysRemarkService.insertSysRemark(sysRemark));
     }
 
@@ -98,5 +139,17 @@ public class SysRemarkController extends BaseController
     public AjaxResult remove(@PathVariable Long[] remarkIds)
     {
         return toAjax(sysRemarkService.deleteSysRemarkByRemarkIds(remarkIds));
+    }
+    /**
+     * 查询当前用户的评论列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:remark:listByUsername')")
+    @GetMapping("/listByUsername")
+    public AjaxResult listByUsername() {
+        long id=getUserId();
+        String str = Long.toString(id);
+
+        List<SysRemark> list = sysRemarkService.selectSysRemarkListByUsername(str);
+        return success(list);
     }
 }
