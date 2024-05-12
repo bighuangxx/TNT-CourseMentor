@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysUserRemarkMapper">
+
+    <resultMap type="SysUserRemark" id="SysUserRemarkResult">
+        <result property="remarkId"    column="remark_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="likeOrReport"    column="like_or_report"    />
+    </resultMap>
+
+    <sql id="selectSysUserRemarkVo">
+        select remark_id, user_id, like_or_report from sys_user_remark
+    </sql>
+
+    <select id="selectSysUserRemarkList" parameterType="SysUserRemark" resultMap="SysUserRemarkResult">
+        <include refid="selectSysUserRemarkVo"/>
+        <where>
+            <if test="remarkId != null "> and remark_id = #{remarkId}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="likeOrReport != null "> and like_or_report = #{likeOrReport}</if>
+        </where>
+    </select>
+
+    <select id="selectSysUserRemarkByRemarkId" parameterType="Long" resultMap="SysUserRemarkResult">
+        <include refid="selectSysUserRemarkVo"/>
+        where remark_id = #{remarkId}
+    </select>
+
+    <select id="getLikeOrReportValue" parameterType="SysUserRemark" resultType="int">
+        select IF(EXISTS(SELECT 1 FROM sys_user_remark WHERE remark_id = #{remarkId} AND user_id = #{userId} AND like_or_report = 1), 1, 0) as likeOrReport
+    </select>
+
+
+
+
+
+    <insert id="insertSysUserRemark" parameterType="SysUserRemark">
+        insert into sys_user_remark
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="remarkId != null">remark_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="likeOrReport != null">like_or_report,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="remarkId != null">#{remarkId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="likeOrReport != null">#{likeOrReport},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysUserRemark" parameterType="SysUserRemark">
+        update sys_user_remark
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="likeOrReport != null">like_or_report = #{likeOrReport},</if>
+        </trim>
+        where remark_id = #{remarkId}
+    </update>
+
+    <delete id="deleteSysUserRemarkByRemarkId" parameterType="Long">
+        delete from sys_user_remark where remark_id = #{remarkId}
+    </delete>
+
+    <delete id="deleteSysUserRemarkByRemarkIds" parameterType="String">
+        delete from sys_user_remark where remark_id in
+        <foreach item="remarkId" collection="array" open="(" separator="," close=")">
+            #{remarkId}
+        </foreach>
+    </delete>
+</mapper>

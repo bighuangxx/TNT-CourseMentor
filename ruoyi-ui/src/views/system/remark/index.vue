@@ -92,6 +92,21 @@
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:remark:remove']"
           >删除</el-button>
+           <!-- Like Button -->
+              <el-button
+                v-if="scope.row.likeCnt === 0"
+                size="mini"
+                type="text"
+                icon="el-icon-thumb-up"
+                @click="handleLike(scope.row)"
+              >点赞</el-button>
+              <el-button
+                v-else
+                size="mini"
+                type="text"
+                icon="el-icon-thumb-up"
+                @click="handleCancelLike(scope.row)"
+              >已赞</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -124,7 +139,7 @@
   </div>
 </template>
 <script>
-import { listRemark, getRemark, delRemark, addRemark, updateRemark, listRemarkByUsername } from "@/api/system/remark";
+import { listRemark, getRemark, delRemark, addRemark, updateRemark, listRemarkByUsername, likeOrCancelLike,getLikeValue } from "@/api/system/remark";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
@@ -136,43 +151,79 @@ export default {
   },
   data() {
     return {
-      // Loading state
       loading: true,
-      // Show search state
       showSearch: true,
-      // Filter my remarks state
       filteringMyRemarks: false,
-      // Remarks data
       remarkList: [],
-      // Remark tree options
       remarkOptions: [],
-      // Dialog title
       title: "",
-      // Dialog visibility
       open: false,
-      // Expand all rows in table
       isExpandAll: true,
-      // Refresh table flag
       refreshTable: true,
-      // Query parameters
       queryParams: {
         remarkName: null,
       },
-      // Form data
       form: {},
-      // Form validation rules
       rules: {}
     };
   },
   created() {
     this.getList();
+this.fetchLikeStatus();
   },
   methods: {
+    handleLike(row) {
+      likeOrCancelLike(row.remarkId).then(response => {
+        if (response.code === 200) {
+          row.likeCnt = 1;
+          this.$message.success("点赞成功");
+        } else {
+          this.$message.error(response.msg);
+        }
+      });
+    },
+    handleCancelLike(row) {
+      likeOrCancelLike(row.remarkId).then(response => {
+        if (response.code === 200) {
+          row.likeCnt = 0;
+          this.$message.success("取消点赞成功");
+        } else {
+          this.$message.error(response.msg);
+        }
+      });
+    },
+    fetchLikeStatus() {
+      const traverseComments = (comments) => {
+        comments.forEach(comment => {
+          // 获取当前评论的点赞状态
+          getLikeValue(comment.remarkId)
+            .then(response => {
+              comment.likeCnt = response.data === 1 ? 1 : 0;
+              console.log(`Remark ID: ${comment.remarkId}, Like Count: ${comment.likeCnt}`);
+            })
+            .catch(error => {
+              console.error("Error fetching like status for remarkId", comment.remarkId, ":", error);
+            });
+
+          // 递归获取子评论的点赞状态
+          if (comment.children && comment.children.length > 0) {
+            traverseComments(comment.children);
+          }
+        });
+      };
+
+      console.log("Fetching like status for remarkList:", this.remarkList);
+      traverseComments(this.remarkList);
+    },
+
+
+
     listMyRemarks() {
       this.loading = true;
       listRemarkByUsername().then(response => {
         this.remarkList = this.handleTree(response.data, "remarkId", "parentId");
         this.loading = false;
+        this.fetchLikeStatus(); // Fetch like status after getting remarkList
       });
     },
     getList() {
@@ -182,7 +233,9 @@ export default {
       } else {
         listRemark(this.queryParams).then(response => {
           this.remarkList = this.handleTree(response.data, "remarkId", "parentId");
+          console.log("Number of remarks in remarkList:", this.remarkList.length);
           this.loading = false;
+          this.fetchLikeStatus(); // Fetch like status after getting remarkList
         });
       }
     },
@@ -222,7 +275,7 @@ export default {
         updateTime: null,
         remarkContent: null,
         point: null,
-        likeCnt: null,
+        likeCnt: null, // Add likeCnt property to the form
         reportCnt: null,
         reservedPort1: null,
         reservedPort2: null,
@@ -247,6 +300,7 @@ export default {
       }
       this.open = true;
       this.title = "添加评论";
+      console.log("Number of remarks in remarkList:", this.remarkList.length);
     },
     toggleExpandAll() {
       this.refreshTable = false;
@@ -301,3 +355,4 @@ export default {
   }
 };
 </script>
+

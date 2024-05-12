@@ -49,3 +49,19 @@ export function listRemarkByUsername() {
     method: 'get'
   })
 }
+// 点赞或取消点赞评论
+export function likeOrCancelLike(remarkId) {
+  return request({
+    url: '/system/remark/' + remarkId,
+    method: 'post'
+  })
+}
+// 获取评论点赞状态
+export function getLikeValue(remarkId) {
+  return request({
+    url: '/system/remark/getLikeValue/' + remarkId,
+    method: 'get'
+  })
+}
+
+

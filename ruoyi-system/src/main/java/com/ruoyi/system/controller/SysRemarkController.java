@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.ruoyi.system.domain.SysUserRemark;
+import com.ruoyi.system.service.ISysUserRemarkService;
 import java.text.DecimalFormat;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
@@ -33,7 +35,8 @@ public class SysRemarkController extends BaseController
 {
     @Autowired
     private ISysRemarkService sysRemarkService;
-
+    @Autowired
+    private ISysUserRemarkService sysUserRemarkService;
     /**
      * 查询评论列表
      */
@@ -152,4 +155,52 @@ public class SysRemarkController extends BaseController
         List<SysRemark> list = sysRemarkService.selectSysRemarkListByUsername(str);
         return success(list);
     }
+    /**
+     * 点赞或取消点赞评论
+     */
+    @PreAuthorize("@ss.hasPermi('system:remark:like')")
+    @PostMapping("/{remarkId}")
+    public AjaxResult likeOrCancelLike(@PathVariable Long remarkId) {
+        long userId = getUserId();
+
+        // 调用查询方法获取点赞状态
+        SysUserRemark tmpt = new SysUserRemark();
+        SysRemark sysRemark =sysRemarkService.selectSysRemarkByRemarkId(remarkId);
+        Long likecnt=sysRemark.getLikeCnt();
+        tmpt.setRemarkId(remarkId);
+        tmpt.setUserId(userId);
+        int likeOrReport = sysUserRemarkService.getLikeOrReportValue(tmpt);
+        if (likeOrReport == 1) {
+            // 如果已经点赞过，则取消点赞
+
+            sysUserRemarkService.deleteSysUserRemarkByRemarkId(remarkId);
+            sysRemark.setLikeCnt(likecnt-1L);
+            sysRemarkService.updateSysRemark(sysRemark);
+            return success("取消点赞成功");
+        } else {
+            // 如果未点赞，则点赞
+            SysUserRemark sysUserRemark = new SysUserRemark();
+            sysUserRemark.setRemarkId(remarkId);
+            sysUserRemark.setUserId(userId);
+            sysUserRemark.setLikeOrReport(1L); // 设置点赞值为 1
+            sysUserRemarkService.insertSysUserRemark(sysUserRemark);
+            sysRemark.setLikeCnt(likecnt+1L);
+            sysRemarkService.updateSysRemark(sysRemark);
+            return success("点赞成功");
+        }
+    }
+    /**
+     * 获取评论点赞状态
+     */
+    @PreAuthorize("@ss.hasPermi('system:remark:getLikeOrReportValue')")
+    @GetMapping("/getLikeValue/{remarkId}")
+    public AjaxResult getLikeValue(@PathVariable Long remarkId) {
+        long userId = getUserId();
+        SysUserRemark tmpt = new SysUserRemark();
+        tmpt.setRemarkId(remarkId);
+        tmpt.setUserId(userId);
+        int likeOrReport = sysUserRemarkService.getLikeOrReportValue(tmpt);
+        return success(likeOrReport);
+    }
+
 }
