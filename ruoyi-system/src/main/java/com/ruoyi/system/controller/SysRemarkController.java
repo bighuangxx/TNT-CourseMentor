@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.ruoyi.common.core.domain.entity.SysUser;//by jinx 20240513
+import com.ruoyi.system.service.ISysUserService;//by jinx 20240513
 import com.ruoyi.system.domain.SysUserRemark;
 import com.ruoyi.system.service.ISysUserRemarkService;
 import java.text.DecimalFormat;
@@ -37,6 +40,8 @@ public class SysRemarkController extends BaseController
     private ISysRemarkService sysRemarkService;
     @Autowired
     private ISysUserRemarkService sysUserRemarkService;
+    @Autowired
+    private ISysUserService userService;
     /**
      * 查询评论列表
      */
@@ -84,7 +89,9 @@ public class SysRemarkController extends BaseController
         sysRemark.setCreateBy(str);
         sysRemark.setStat(1L);
 
+
         if (sysRemark.getParentId() != null) {
+
             SysRemark parentRemark = sysRemarkService.selectSysRemarkByRemarkId(sysRemark.getParentId());
             if (parentRemark != null) {
 
@@ -108,6 +115,22 @@ public class SysRemarkController extends BaseController
                     sysRemark.setRemarkName(parentRemarkName + " - " + sysRemark.getRemarkName());
                 }
                 if(stati>=3){
+                    // 检查是否存在符合条件的评论项 by jinx start 20240513
+                    SysRemark tmpt = new SysRemark();
+                    tmpt.setParentId(sysRemark.getParentId());
+                    tmpt.setCreateBy(str);
+                    int existence = sysRemarkService.checkSysRemarkExistence(tmpt);
+                    if (existence == 1) {
+                        // 如果已存在符合条件的评论项，则拒绝添加评论
+                        return AjaxResult.error("您已经添加对该课程的评价，无法再次添加评论");
+                    }
+                    //by jinx end 20240513
+
+                    //增加用户名 by jinx start 20240513
+                    SysUser sysuser= userService.selectUserById(id);
+                    String name =sysuser.getNickName();
+                    sysRemark.setRemarkContent(name+":"+sysRemark.getRemarkContent());
+                    //by jinx end 20240513
                     if (sysRemark.getLikeCnt() == null) {
                         sysRemark.setLikeCnt(0L);
                     }
@@ -201,6 +224,33 @@ public class SysRemarkController extends BaseController
         tmpt.setUserId(userId);
         int likeOrReport = sysUserRemarkService.getLikeOrReportValue(tmpt);
         return success(likeOrReport);
+    }
+
+    /**
+     * 处理举报评论 by jinx 20240514
+     */
+    @PreAuthorize("@ss.hasPermi('system:remark:report')")
+    @PostMapping("/report/{remarkId}")
+    public AjaxResult report(@PathVariable Long remarkId) {
+        long userId = getUserId();
+
+        // 调用查询方法获取举报状态
+        SysUserRemark tmpt = new SysUserRemark();
+        tmpt.setRemarkId(remarkId);
+        tmpt.setUserId(userId);
+        int reportValue = sysUserRemarkService.getReportValue(tmpt);
+        if (reportValue == 1) {
+            // 如果已经举报过，则直接返回举报成功
+            return success("您已经举报过该评论");
+        } else {
+            // 如果未举报，则添加举报记录
+            SysUserRemark sysUserRemark = new SysUserRemark();
+            sysUserRemark.setRemarkId(remarkId);
+            sysUserRemark.setUserId(userId);
+            sysUserRemark.setLikeOrReport(2L); // 设置举报值为 2
+            sysUserRemarkService.insertSysUserRemark(sysUserRemark);
+            return success("举报成功");
+        }
     }
 
 }

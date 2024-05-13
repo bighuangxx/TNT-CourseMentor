@@ -58,4 +58,12 @@ public interface ISysRemarkService
      * @return 结果
      */
     public int deleteSysRemarkByRemarkId(Long remarkId);
+
+    /**
+     * 根据用户ID和父评论ID查询评论是否存在 by jinx 20240513
+     *
+
+     * @return 如果存在返回1，否则返回0
+     */
+    public int checkSysRemarkExistence(SysRemark sysRemark);
 }

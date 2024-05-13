@@ -64,4 +64,11 @@ export function getLikeValue(remarkId) {
   })
 }
 
+// 举报评论 by jinx 20240514
+export function reportRemark(remarkId) {
+  return request({
+    url: '/system/remark/report/' + remarkId,
+    method: 'post'
+  })
+}
 

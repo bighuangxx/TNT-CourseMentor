@@ -112,6 +112,18 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <delete id="deleteSysRemarkByRemarkId" parameterType="Long">
         delete from sys_remark where remark_id = #{remarkId}
     </delete>
+    <!--
+        查询是否存在符合条件的评论项
+        参数：
+            - createBy: 创建者
+            - parentId: 父评论ID
+        返回值：如果存在符合条件的评论项，返回1；否则返回0
+        Made by jinx 20240513
+    -->
+    <select id="checkSysRemarkExistence" parameterType="SysRemark" resultType="int">
+        SELECT COUNT(1) FROM sys_remark WHERE create_by = #{createBy} AND parent_id = #{parentId}
+    </select>
+
 
     <delete id="deleteSysRemarkByRemarkIds" parameterType="String">
         delete from sys_remark where remark_id in

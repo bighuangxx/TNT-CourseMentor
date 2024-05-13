@@ -97,16 +97,24 @@
                 v-if="scope.row.likeCnt === 0"
                 size="mini"
                 type="text"
-                icon="el-icon-thumb-up"
+                icon="el-icon-star-off"
                 @click="handleLike(scope.row)"
               >点赞</el-button>
               <el-button
                 v-else
                 size="mini"
                 type="text"
-                icon="el-icon-thumb-up"
+                icon="el-icon-star-on"
                 @click="handleCancelLike(scope.row)"
               >已赞</el-button>
+              <!-- 举报// by jinx 20240514 -->
+                  <el-button
+                    size="mini"
+                    type="text"
+                    icon="el-icon-warning"
+                    @click="handleReport(scope.row)"
+                  >举报</el-button>
+
         </template>
       </el-table-column>
     </el-table>
@@ -139,7 +147,8 @@
   </div>
 </template>
 <script>
-import { listRemark, getRemark, delRemark, addRemark, updateRemark, listRemarkByUsername, likeOrCancelLike,getLikeValue } from "@/api/system/remark";
+//by jinx 20240514
+import { listRemark, getRemark, delRemark, addRemark, updateRemark, listRemarkByUsername, likeOrCancelLike,getLikeValue,reportRemark } from "@/api/system/remark";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
@@ -172,6 +181,16 @@ export default {
 this.fetchLikeStatus();
   },
   methods: {
+  handleReport(row) {// by jinx 20240514
+    reportRemark(row.remarkId).then(response => {
+      if (response.code === 200) {
+        this.$message.success(response.msg);
+      } else {
+        this.$message.error(response.msg);
+      }
+    });
+  },
+
     handleLike(row) {
       likeOrCancelLike(row.remarkId).then(response => {
         if (response.code === 200) {

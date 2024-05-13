@@ -66,4 +66,12 @@ public interface ISysUserRemarkService
      * @return 结果
      */
     public int deleteSysUserRemarkByRemarkId(Long remarkId);
+
+    /**
+     * 处理举报
+     *
+     * @param sysUserRemark 没用 by jinx 20240514
+     * @return 结果
+     */
+    public int getReportValue(SysUserRemark sysUserRemark);
 }

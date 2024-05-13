@@ -67,4 +67,13 @@ public interface SysRemarkMapper
      * @return 结果
      */
     public int deleteSysRemarkByRemarkIds(Long[] remarkIds);
+
+    /**
+     * 根据用户ID和父评论ID查询评论是否存在 byjinx
+     *
+
+     * @return 如果存在返回1，否则返回0
+     */
+    public int checkSysRemarkExistence(SysRemark sysRemark);
+
 }

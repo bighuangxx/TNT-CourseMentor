@@ -67,4 +67,5 @@ public interface SysUserRemarkMapper
      */
     public int getLikeOrReportValue(SysUserRemark sysUserRemark);
 
+    public int getReportValue(SysUserRemark sysUserRemark);
 }

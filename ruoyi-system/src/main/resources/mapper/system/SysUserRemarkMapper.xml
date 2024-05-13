@@ -31,6 +31,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="getLikeOrReportValue" parameterType="SysUserRemark" resultType="int">
         select IF(EXISTS(SELECT 1 FROM sys_user_remark WHERE remark_id = #{remarkId} AND user_id = #{userId} AND like_or_report = 1), 1, 0) as likeOrReport
     </select>
+    <!--
+               查询是否存在举报
+               返回值：如果存在符合条件的评论项，返回1；否则返回0
+               Made by jinx 20240514
+           -->
+    <select id="getReportValue" parameterType="SysUserRemark" resultType="int">
+        select count(*) from sys_user_remark
+        where remark_id = #{remarkId} and user_id = #{userId} and like_or_report = 2
+    </select>
 
 
 

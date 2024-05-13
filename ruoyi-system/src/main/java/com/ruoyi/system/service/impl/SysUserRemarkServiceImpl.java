@@ -98,4 +98,16 @@ public class SysUserRemarkServiceImpl implements ISysUserRemarkService
     {
         return sysUserRemarkMapper.deleteSysUserRemarkByRemarkId(remarkId);
     }
+
+    /**
+     * 处理举报
+     *
+     * @param sysUserRemark 没用  by jinx 20240514
+     * @return 结果
+     */
+    @Override
+    public int getReportValue(SysUserRemark sysUserRemark) {
+        return sysUserRemarkMapper.getReportValue(sysUserRemark);
+    }
+
 }
