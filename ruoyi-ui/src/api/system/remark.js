@@ -79,4 +79,3 @@ export function reportRemark(remarkId) {
     method: 'post'
   })
 }
-
