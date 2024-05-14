@@ -94,6 +94,11 @@ public class SysRemarkController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody SysRemark sysRemark)
     {
+
+        // 检查评论内容是否包含不当关键词
+        if (containsProhibitedWords(sysRemark.getRemarkContent())) {
+            return AjaxResult.error("评论内容包含不当关键词，无法添加评论");
+        }
         long id=getUserId();
         String str = Long.toString(id);
         sysRemark.setCreateBy(str);
@@ -309,5 +314,16 @@ public class SysRemarkController extends BaseController
             return success("举报成功");
         }
     }
-
+    private boolean containsProhibitedWords(String content) {
+        // 可以扩展此列表以包含更多不当关键词
+        String[] prohibitedWords = {  "sb", "fw", "傻逼", "傻B", "操你", "你妈", "妈的", "垃圾", "白痴", "蠢货", "笨蛋", "智障",
+                "傻子", "废物", "狗屎", "滚蛋", "王八蛋", "婊子", "妓女", "贱人", "畜生", "死全家", "去死",
+                "混蛋", "杂种", "狗逼", "狗日的", "贱货", "操你妈", "死妈", "妈逼", "草泥马" };
+        for (String word : prohibitedWords) {
+            if (content.toLowerCase().contains(word)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
