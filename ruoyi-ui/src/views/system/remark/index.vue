@@ -21,13 +21,14 @@
       <!-- Add Remark Button -->
       <el-col :span="1.5">
         <el-button
+          v-if="role === 1 || role === 2"
           type="primary"
           plain
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
           v-hasPermi="['system:remark:add']"
-        >新增</el-button>
+        >新增课程</el-button>
       </el-col>
       <!-- Expand/Collapse Button -->
       <el-col :span="1.5">
@@ -72,6 +73,7 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
+            v-if="role === 1 || role === 2"
             size="mini"
             type="text"
             icon="el-icon-edit"
@@ -79,13 +81,23 @@
             v-hasPermi="['system:remark:edit']"
           >修改</el-button>
           <el-button
+            v-if="scope.row.stat === 1 && (role ===1 || role===2)"
             size="mini"
             type="text"
             icon="el-icon-plus"
             @click="handleAdd(scope.row)"
             v-hasPermi="['system:remark:add']"
-          >新增</el-button>
+          >添加老师</el-button>
           <el-button
+            v-if=" scope.row.stat === 2  "
+            size="mini"
+            type="text"
+            icon="el-icon-plus"
+            @click="handleAdd(scope.row)"
+            v-hasPermi="['system:remark:add']"
+          >评论</el-button>
+          <el-button
+            v-if="role === 1 || role === 2"
             size="mini"
             type="text"
             icon="el-icon-delete"
@@ -93,38 +105,48 @@
             v-hasPermi="['system:remark:remove']"
           >删除</el-button>
            <!-- Like Button -->
-              <el-button
-                v-if="scope.row.likeCnt === 0"
-                size="mini"
-                type="text"
-                icon="el-icon-star-off"
-                @click="handleLike(scope.row)"
-              >点赞</el-button>
-              <el-button
-                v-else
-                size="mini"
-                type="text"
-                icon="el-icon-star-on"
-                @click="handleCancelLike(scope.row)"
-              >已赞</el-button>
-              <!-- 举报// by jinx 20240514 -->
-                  <el-button
-                    size="mini"
-                    type="text"
-                    icon="el-icon-warning"
-                    @click="handleReport(scope.row)"
-                  >举报</el-button>
+          <el-button
+            v-if="scope.row.reservedPort1 === 0 && scope.row.stat === 3"
+            size="mini"
+            type="text"
+            icon="el-icon-star-off"
+            @click="handleLike(scope.row)"
+          >点赞</el-button>
+          <el-button
+            v-if="scope.row.reservedPort1 === 1 && scope.row.stat === 3"
+            size="mini"
+            type="text"
+            icon="el-icon-star-on"
+            @click="handleCancelLike(scope.row)"
+          >已赞</el-button>
+          <!-- 举报// by jinx 20240514 -->
+          <el-button
+            v-if="scope.row.stat === 3"
+            size="mini"
+            type="text"
+            icon="el-icon-warning"
+            @click="handleReport(scope.row)"
+          >举报</el-button>
 
         </template>
       </el-table-column>
     </el-table>
 
     <!-- Add/Update Remark Dialog -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <el-dialog :title="title" :visible.sync="open1" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="名称" prop="remarkName">
+        <el-form-item label="老师名称" prop="remarkName" >
           <el-input v-model="form.remarkName" placeholder="请输入名称" />
         </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
+<!--    zmjjkk 2024/5/14-->
+    <el-dialog :title="title" :visible.sync="open2" width="500px" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="评论内容">
           <editor v-model="form.remarkContent" :min-height="192"/>
         </el-form-item>
@@ -144,11 +166,22 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+    <el-dialog :title="title" :visible.sync="open3" width="500px" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+        <el-form-item label="课程名称" prop="remarkName" >
+          <el-input v-model="form.remarkName" placeholder="请输入名称" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
 //by jinx 20240514
-import { listRemark, getRemark, delRemark, addRemark, updateRemark, listRemarkByUsername, likeOrCancelLike,getLikeValue,reportRemark } from "@/api/system/remark";
+import { listRemark, getRemark, delRemark, addRemark, updateRemark, listRemarkByUsername, likeOrCancelLike,getLikeValue,reportRemark,getUserRole } from "@/api/system/remark";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
@@ -166,19 +199,23 @@ export default {
       remarkList: [],
       remarkOptions: [],
       title: "",
-      open: false,
+      open1: false,
+      open2: false,
+      open3: false,
       isExpandAll: true,
       refreshTable: true,
       queryParams: {
         remarkName: null,
       },
       form: {},
-      rules: {}
+      rules: {},
+      role: null,
     };
   },
   created() {
     this.getList();
-this.fetchLikeStatus();
+    this.fetchLikeStatus();
+    this.setUserRole();
   },
   methods: {
   handleReport(row) {// by jinx 20240514
@@ -191,10 +228,23 @@ this.fetchLikeStatus();
     });
   },
 
+    //zmjjkk 20240514 start
+    setUserRole() {
+      getUserRole().then(response => {
+        if (response.code === 200){
+          this.role=response.data;
+          console.log(response.data);
+        }
+        else {
+          this.$message.error(response.msg);
+        }
+      })
+    },
+    //zmjjkk 20240514 end
     handleLike(row) {
       likeOrCancelLike(row.remarkId).then(response => {
         if (response.code === 200) {
-          row.likeCnt = 1;
+          row.reservedPort1 = 1;
           this.$message.success("点赞成功");
         } else {
           this.$message.error(response.msg);
@@ -204,7 +254,7 @@ this.fetchLikeStatus();
     handleCancelLike(row) {
       likeOrCancelLike(row.remarkId).then(response => {
         if (response.code === 200) {
-          row.likeCnt = 0;
+          row.reservedPort1 = 0;
           this.$message.success("取消点赞成功");
         } else {
           this.$message.error(response.msg);
@@ -217,11 +267,11 @@ this.fetchLikeStatus();
           // 获取当前评论的点赞状态
           getLikeValue(comment.remarkId)
             .then(response => {
-              comment.likeCnt = response.data === 1 ? 1 : 0;
-              console.log(`Remark ID: ${comment.remarkId}, Like Count: ${comment.likeCnt}`);
+              comment.reservedPort1 = response.data === 1 ? 1 : 0;
+              console.log(`Remark ID: ${comment.reservedPort1}, Like Count: ${comment.reservedPort1}`);
             })
             .catch(error => {
-              console.error("Error fetching like status for remarkId", comment.remarkId, ":", error);
+              console.error("Error fetching like status for remarkId", comment.reservedPort1, ":", error);
             });
 
           // 递归获取子评论的点赞状态
@@ -277,7 +327,9 @@ this.fetchLikeStatus();
       });
     },
     cancel() {
-      this.open = false;
+      this.open1 = false;
+      this.open2 = false;
+      this.open3 = fales;
       this.reset();
     },
     reset() {
@@ -294,11 +346,11 @@ this.fetchLikeStatus();
         updateTime: null,
         remarkContent: null,
         point: null,
-        likeCnt: null, // Add likeCnt property to the form
+        likeCnt: null,
         reportCnt: null,
         reservedPort1: null,
         reservedPort2: null,
-        reservedPort3: null
+        reservedPort3: null,
       };
       this.resetForm("form");
     },
@@ -317,8 +369,19 @@ this.fetchLikeStatus();
       } else {
         this.form.parentId = 0;
       }
-      this.open = true;
-      this.title = "添加评论";
+      switch (row.stat) {
+        case 1 :
+          this.open1 = true;
+          this.title = "添加老师";
+          break;
+        case 2 :
+          this.open2 = true;
+          this.title = "添加评论";
+          break;
+        default:
+          this.open3 = true;
+          this.title = "添加课程";
+      }
       console.log("Number of remarks in remarkList:", this.remarkList.length);
     },
     toggleExpandAll() {
@@ -336,8 +399,19 @@ this.fetchLikeStatus();
       }
       getRemark(row.remarkId).then(response => {
         this.form = response.data;
-        this.open = true;
-        this.title = "修改评论";
+        switch (row.stat) {
+          case 1 :
+            this.open1 = true;
+            this.title = "添加老师";
+            break;
+          case 2 :
+            this.open2 = true;
+            this.title = "添加评论";
+            break;
+          default:
+            this.open3 = true;
+            this.title = "添加课程";
+        }
       });
     },
     submitForm() {
@@ -346,13 +420,17 @@ this.fetchLikeStatus();
           if (this.form.remarkId != null) {
             updateRemark(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
-              this.open = false;
+              this.open1 = false;
+              this.open2 = false;
+              this.open3 = false;
               this.getList();
             });
           } else {
             addRemark(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
-              this.open = false;
+              this.open1 = false;
+              this.open2 = false;
+              this.open3 = false;
               this.getList();
             });
           }

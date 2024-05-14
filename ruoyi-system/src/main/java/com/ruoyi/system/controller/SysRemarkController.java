@@ -2,6 +2,9 @@ package com.ruoyi.system.controller;
 
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.common.core.domain.entity.SysRole;
+import com.ruoyi.system.service.ISysRoleService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,6 +43,8 @@ public class SysRemarkController extends BaseController
     private ISysRemarkService sysRemarkService;
     @Autowired
     private ISysUserRemarkService sysUserRemarkService;
+    @Autowired
+    private ISysRoleService sysRoleService;
     @Autowired
     private ISysUserService userService;
     /**
@@ -215,7 +220,7 @@ public class SysRemarkController extends BaseController
     /**
      * 获取评论点赞状态
      */
-    @PreAuthorize("@ss.hasPermi('system:remark:getLikeOrReportValue')")
+    @PreAuthorize("@ss.hasPermi('system:remark:like')")
     @GetMapping("/getLikeValue/{remarkId}")
     public AjaxResult getLikeValue(@PathVariable Long remarkId) {
         long userId = getUserId();
@@ -225,11 +230,23 @@ public class SysRemarkController extends BaseController
         int likeOrReport = sysUserRemarkService.getLikeOrReportValue(tmpt);
         return success(likeOrReport);
     }
+    //zmjjkk 2024/5/14
+    /**
+     * 获取用户角色
+    */
+    @PreAuthorize("@ss.hasPermi('system:remark:add')")
+    @GetMapping("/getUserRole")
+    public AjaxResult getUserRole() {
+        Long userId = getUserId();
+        Long roleId = sysRoleService.selectRoleListByUserId(userId).get(0);
+        return success(roleId);
+    }
+    //end
 
     /**
      * 处理举报评论 by jinx 20240514
      */
-    @PreAuthorize("@ss.hasPermi('system:remark:report')")
+    @PreAuthorize("@ss.hasPermi('system:remark:like')")
     @PostMapping("/report/{remarkId}")
     public AjaxResult report(@PathVariable Long remarkId) {
         long userId = getUserId();

@@ -63,6 +63,14 @@ export function getLikeValue(remarkId) {
     method: 'get'
   })
 }
+export function getUserRole() {
+  return request({
+    url: '/system/remark/getUserRole/',
+    method: 'get'
+  })
+}
+
+
 
 // 举报评论 by jinx 20240514
 export function reportRemark(remarkId) {

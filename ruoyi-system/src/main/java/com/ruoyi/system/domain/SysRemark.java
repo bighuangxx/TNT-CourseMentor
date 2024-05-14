@@ -7,7 +7,7 @@ import com.ruoyi.common.core.domain.TreeEntity;
 
 /**
  * 评论对象 sys_remark
- * 
+ *
  * @author ruoyi
  * @date 2024-05-11
  */
@@ -51,102 +51,102 @@ public class SysRemark extends TreeEntity
     /** 预留接口 */
     private String reservedPort3;
 
-    public void setRemarkId(Long remarkId) 
+    public void setRemarkId(Long remarkId)
     {
         this.remarkId = remarkId;
     }
 
-    public Long getRemarkId() 
+    public Long getRemarkId()
     {
         return remarkId;
     }
-    public void setStat(Long stat) 
+    public void setStat(Long stat)
     {
         this.stat = stat;
     }
 
-    public Long getStat() 
+    public Long getStat()
     {
         return stat;
     }
-    public void setRemarkName(String remarkName) 
+    public void setRemarkName(String remarkName)
     {
         this.remarkName = remarkName;
     }
 
-    public String getRemarkName() 
+    public String getRemarkName()
     {
         return remarkName;
     }
-    public void setDelFlag(String delFlag) 
+    public void setDelFlag(String delFlag)
     {
         this.delFlag = delFlag;
     }
 
-    public String getDelFlag() 
+    public String getDelFlag()
     {
         return delFlag;
     }
-    public void setRemarkContent(String remarkContent) 
+    public void setRemarkContent(String remarkContent)
     {
         this.remarkContent = remarkContent;
     }
 
-    public String getRemarkContent() 
+    public String getRemarkContent()
     {
         return remarkContent;
     }
-    public void setPoint(Long point) 
+    public void setPoint(Long point)
     {
         this.point = point;
     }
 
-    public Long getPoint() 
+    public Long getPoint()
     {
         return point;
     }
-    public void setLikeCnt(Long likeCnt) 
+    public void setLikeCnt(Long likeCnt)
     {
         this.likeCnt = likeCnt;
     }
 
-    public Long getLikeCnt() 
+    public Long getLikeCnt()
     {
         return likeCnt;
     }
-    public void setReportCnt(Long reportCnt) 
+    public void setReportCnt(Long reportCnt)
     {
         this.reportCnt = reportCnt;
     }
 
-    public Long getReportCnt() 
+    public Long getReportCnt()
     {
         return reportCnt;
     }
-    public void setReservedPort1(String reservedPort1) 
+    public void setReservedPort1(String reservedPort1)
     {
         this.reservedPort1 = reservedPort1;
     }
 
-    public String getReservedPort1() 
+    public String getReservedPort1()
     {
         return reservedPort1;
     }
-    public void setReservedPort2(String reservedPort2) 
+    public void setReservedPort2(String reservedPort2)
     {
         this.reservedPort2 = reservedPort2;
     }
 
-    public String getReservedPort2() 
+    public String getReservedPort2()
     {
         return reservedPort2;
     }
-    public void setReservedPort3(String reservedPort3) 
+    public void setReservedPort3(String reservedPort3)
     {
         this.reservedPort3 = reservedPort3;
     }
 
-    public String getReservedPort3() 
+    public String getReservedPort3()
     {
         return reservedPort3;
     }
@@ -174,3 +174,4 @@ public class SysRemark extends TreeEntity
             .toString();
     }
 }
+
