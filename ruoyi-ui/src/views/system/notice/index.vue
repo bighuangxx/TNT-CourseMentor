@@ -1,24 +1,24 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="公告标题" prop="noticeTitle">
+      <el-form-item label="评论内容" prop="noticeTitle">
         <el-input
           v-model="queryParams.noticeTitle"
-          placeholder="请输入公告标题"
+          placeholder="请输入评论内容"
           clearable
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="操作人员" prop="createBy">
+      <el-form-item label="昵称" prop="createBy">
         <el-input
           v-model="queryParams.createBy"
-          placeholder="请输入操作人员"
+          placeholder="请输入被举报昵称"
           clearable
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="类型" prop="noticeType">
-        <el-select v-model="queryParams.noticeType" placeholder="公告类型" clearable>
+      <el-form-item label="举报类型" prop="noticeType">
+        <el-select v-model="queryParams.noticeType" placeholder="请选择举报类型" clearable>
           <el-option
             v-for="dict in dict.type.sys_notice_type"
             :key="dict.value"
@@ -71,25 +71,21 @@
 
     <el-table v-loading="loading" :data="noticeList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="序号" align="center" prop="noticeId" width="100" />
+
       <el-table-column
-        label="公告标题"
+        label="评论内容"
         align="center"
         prop="noticeTitle"
         :show-overflow-tooltip="true"
       />
-      <el-table-column label="公告类型" align="center" prop="noticeType" width="100">
+      <el-table-column label="举报类型" align="center" prop="noticeType" width="100">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.sys_notice_type" :value="scope.row.noticeType"/>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" prop="status" width="100">
-        <template slot-scope="scope">
-          <dict-tag :options="dict.type.sys_notice_status" :value="scope.row.status"/>
-        </template>
-      </el-table-column>
-      <el-table-column label="创建者" align="center" prop="createBy" width="100" />
-      <el-table-column label="创建时间" align="center" prop="createTime" width="100">
+
+      <el-table-column label="被举报昵称" align="center" prop="createBy" width="200" />
+      <el-table-column label="举报时间" align="center" prop="createTime" width="100">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') }}</span>
         </template>
@@ -99,10 +95,10 @@
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
+            icon="el-icon-check"
+            @click="handleConfirm(scope.row)"
             v-hasPermi="['system:notice:edit']"
-          >修改</el-button>
+          >跳过</el-button>
           <el-button
             size="mini"
             type="text"
@@ -127,13 +123,13 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="12">
-            <el-form-item label="公告标题" prop="noticeTitle">
-              <el-input v-model="form.noticeTitle" placeholder="请输入公告标题" />
+            <el-form-item label="评论内容" prop="noticeTitle">
+              <el-input v-model="form.noticeTitle" placeholder="请输入评论内容" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="公告类型" prop="noticeType">
-              <el-select v-model="form.noticeType" placeholder="请选择公告类型">
+            <el-form-item label="举报数量" prop="noticeType">
+              <el-select v-model="form.noticeType" placeholder="请选择举报数量">
                 <el-option
                   v-for="dict in dict.type.sys_notice_type"
                   :key="dict.value"
@@ -170,7 +166,7 @@
 </template>
 
 <script>
-import { listNotice, getNotice, delNotice, addNotice, updateNotice } from "@/api/system/notice";
+import { listNotice, getNotice, delNotice, addNotice, updateNotice,removeNotices } from "@/api/system/notice";
 
 export default {
   name: "Notice",
@@ -306,7 +302,16 @@ export default {
         this.getList();
         this.$modal.msgSuccess("删除成功");
       }).catch(() => {});
-    }
+    },
+      handleConfirm(row) {
+          const noticeIds = [row.noticeId];
+          removeNotices(noticeIds).then(() => {
+            this.getList();
+            this.$modal.msgSuccess("处理成功");
+          }).catch(() => {
+            this.$modal.msgError("删除失败");
+          });
+        }
   }
 };
 </script>

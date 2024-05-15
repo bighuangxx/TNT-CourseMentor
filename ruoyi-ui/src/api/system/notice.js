@@ -42,3 +42,11 @@ export function delNotice(noticeId) {
     method: 'delete'
   })
 }
+
+// 批量删除公告 by jinx 20240514.2
+export function removeNotices(noticeIds) {
+  return request({
+    url: '/system/notice/next/' + noticeIds,
+    method: 'delete'
+  })
+}

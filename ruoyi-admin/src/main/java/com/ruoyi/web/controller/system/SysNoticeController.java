@@ -19,10 +19,13 @@ import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.domain.SysNotice;
 import com.ruoyi.system.service.ISysNoticeService;
-
+import com.ruoyi.system.domain.SysRemark;//by jinx 20240514.2
+import com.ruoyi.system.service.ISysRemarkService;//by jinx 20240514.2
+import com.ruoyi.system.domain.SysUserRemark;
+import com.ruoyi.system.service.ISysUserRemarkService;
 /**
  * 公告 信息操作处理
- * 
+ *
  * @author ruoyi
  */
 @RestController
@@ -31,7 +34,10 @@ public class SysNoticeController extends BaseController
 {
     @Autowired
     private ISysNoticeService noticeService;
-
+    @Autowired
+    private ISysRemarkService sysRemarkService;
+    @Autowired
+    private ISysUserRemarkService sysUserRemarkService;
     /**
      * 获取通知公告列表
      */
@@ -62,7 +68,7 @@ public class SysNoticeController extends BaseController
     @PostMapping
     public AjaxResult add(@Validated @RequestBody SysNotice notice)
     {
-        notice.setCreateBy(getUsername());
+
         return toAjax(noticeService.insertNotice(notice));
     }
 
@@ -81,11 +87,39 @@ public class SysNoticeController extends BaseController
     /**
      * 删除通知公告
      */
+    /**
+     * 删除通知公告 by jinx 20240514.2
+     */
     @PreAuthorize("@ss.hasPermi('system:notice:remove')")
     @Log(title = "通知公告", businessType = BusinessType.DELETE)
     @DeleteMapping("/{noticeIds}")
-    public AjaxResult remove(@PathVariable Long[] noticeIds)
+    public AjaxResult remove(@PathVariable Long[] noticeIds) {
+        // 循环处理每个 noticeId
+        for (Long noticeId : noticeIds) {
+            // 根据 noticeId 查询通知公告对象
+            SysNotice notice = noticeService.selectNoticeById(noticeId);
+            if (notice != null) {
+                // 获取通知公告的内容
+                String noticeContent = notice.getRemark();
+                // 将内容转换为 long 类型
+                long remarkId = Long.parseLong(noticeContent);
+                // 调用删除备注的方法
+                sysRemarkService.deleteSysRemarkByRemarkIds(new Long[]{remarkId});
+                sysUserRemarkService.deleteSysUserRemarkByRemarkIds(new Long[]{remarkId});
+            }
+        }
+        // 删除通知公告
+
+        return toAjax(noticeService.deleteNoticeByIds(noticeIds));
+    }
+
+    //by jinx 20240514.2
+    @PreAuthorize("@ss.hasPermi('system:notice:remove')")
+    @Log(title = "通知公告", businessType = BusinessType.DELETE)
+    @DeleteMapping("/next/{noticeIds}")
+    public AjaxResult removeing(@PathVariable Long[] noticeIds)
     {
+
         return toAjax(noticeService.deleteNoticeByIds(noticeIds));
     }
 }

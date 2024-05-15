@@ -29,6 +29,9 @@ import com.ruoyi.system.domain.SysRemark;
 import com.ruoyi.system.service.ISysRemarkService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 
+import com.ruoyi.system.domain.SysNotice;//by jinx 20240514.2
+import com.ruoyi.system.service.ISysNoticeService;//by jinx 20240514.2
+
 /**
  * 评论Controller
  *
@@ -47,6 +50,8 @@ public class SysRemarkController extends BaseController
     private ISysRoleService sysRoleService;
     @Autowired
     private ISysUserService userService;
+    @Autowired
+    private ISysNoticeService noticeService;
     /**
      * 查询评论列表
      */
@@ -89,6 +94,11 @@ public class SysRemarkController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody SysRemark sysRemark)
     {
+
+        // 检查评论内容是否包含不当关键词
+        if (containsProhibitedWords(sysRemark.getRemarkContent())) {
+            return AjaxResult.error("评论内容包含不当关键词，无法添加评论");
+        }
         long id=getUserId();
         String str = Long.toString(id);
         sysRemark.setCreateBy(str);
@@ -266,8 +276,54 @@ public class SysRemarkController extends BaseController
             sysUserRemark.setUserId(userId);
             sysUserRemark.setLikeOrReport(2L); // 设置举报值为 2
             sysUserRemarkService.insertSysUserRemark(sysUserRemark);
+
+            SysUser sysuser= userService.selectUserById(getUserId());
+            String name =sysuser.getNickName();
+            //处理举报 by jinx 20240514.2
+            SysRemark temp=sysRemarkService.selectSysRemarkByRemarkId(remarkId);
+            temp.setReportCnt(temp.getReportCnt()+1L);
+            sysRemarkService.updateSysRemark(temp);
+            System.out.println(temp.getReportCnt());
+
+            // 将 remarkId 转换为字符串
+            String remarkIdStr = String.valueOf(remarkId);
+            // 调用 selectByRemark 方法检查是否存在相同 remarkId 的评论
+            int result = noticeService.selectByRemark(remarkIdStr);
+            // 如果返回值为0，则表示不存在相同 remarkId 的评论，可以执行插入操作
+            if (result==0&&temp.getReportCnt() % 10 == 1){
+                SysNotice sysnotice=new SysNotice();
+
+                sysnotice.setNoticeId(remarkId);
+
+                sysnotice.setCreateBy(name);
+                String remarkContent = temp.getRemarkContent();
+                if (remarkContent.startsWith(name + ":")) {
+                    remarkContent = remarkContent.substring(name.length() + 1);
+                }
+                sysnotice.setNoticeTitle(remarkContent);
+                // 设置sysnotice的noticeContent属性为处理后的字符串
+                sysnotice.setRemark(remarkIdStr);
+
+                sysnotice.setNoticeType(Integer.toString(1));
+                if(temp.getReportCnt()>=50){
+                    sysnotice.setNoticeType(Integer.toString(2));
+                }
+                noticeService.insertNotice(sysnotice);
+            }
+
             return success("举报成功");
         }
     }
-
+    private boolean containsProhibitedWords(String content) {
+        // 可以扩展此列表以包含更多不当关键词
+        String[] prohibitedWords = {  "sb", "fw", "傻逼", "傻B", "操你", "你妈", "妈的", "垃圾", "白痴", "蠢货", "笨蛋", "智障",
+                "傻子", "废物", "狗屎", "滚蛋", "王八蛋", "婊子", "妓女", "贱人", "畜生", "死全家", "去死",
+                "混蛋", "杂种", "狗逼", "狗日的", "贱货", "操你妈", "死妈", "妈逼", "草泥马" };
+        for (String word : prohibitedWords) {
+            if (content.toLowerCase().contains(word)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
