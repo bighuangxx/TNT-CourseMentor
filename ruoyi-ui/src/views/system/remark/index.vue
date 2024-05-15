@@ -329,7 +329,7 @@ export default {
     cancel() {
       this.open1 = false;
       this.open2 = false;
-      this.open3 = fales;
+      this.open3 = false;
       this.reset();
     },
     reset() {
@@ -400,17 +400,17 @@ export default {
       getRemark(row.remarkId).then(response => {
         this.form = response.data;
         switch (row.stat) {
-          case 1 :
-            this.open1 = true;
-            this.title = "添加老师";
-            break;
           case 2 :
+            this.open1 = true;
+            this.title = "修改老师";
+            break;
+          case 3 :
             this.open2 = true;
-            this.title = "添加评论";
+            this.title = "修改评论";
             break;
           default:
             this.open3 = true;
-            this.title = "添加课程";
+            this.title = "修改课程";  //zmjjkk 2024/5/15 更新修改表不匹配bug
         }
       });
     },
