@@ -66,4 +66,19 @@ public interface ISysRemarkService
      * @return 如果存在返回1，否则返回0
      */
     public int checkSysRemarkExistence(SysRemark sysRemark);
+
+    /**
+     * 根据用户ID和父评论ID查询评论是否存在 by firefly 20240514
+     *
+     * @return point的平均数
+     */
+    public Double selectAveragePoint(Long remarkId);
+
+    /**
+     * 按照时间升序/降序排列评论 by firefly 20240515
+     *
+     * return 列表
+     */
+    public List<SysRemark> selectSysRemarkListByTimeASC(SysRemark sysRemark);
+    public List<SysRemark> selectSysRemarkListByTimeDESC(SysRemark sysRemark);
 }

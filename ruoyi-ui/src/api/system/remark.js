@@ -70,6 +70,23 @@ export function getUserRole() {
   })
 }
 
+// 查询时间升序排列的评论列表 by firefly 20240515
+export function listRemarkByTimeASC(query) {
+  return request({
+    url: '/system/remark/listByTimeASC',
+    method: 'get',
+    params: query
+  })
+}
+
+// 查询时间降序排列的评论列表 by firefly 20240515
+export function listRemarkByTimeDESC(query) {
+  return request({
+    url: '/system/remark/listByTimeDESC',
+    method: 'get',
+    params: query
+  })
+}
 
 
 // 举报评论 by jinx 20240514

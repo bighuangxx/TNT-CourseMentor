@@ -157,7 +157,32 @@ public class SysRemarkController extends BaseController
                 }
             }
         }
-        return toAjax(sysRemarkService.insertSysRemark(sysRemark));
+        // by firefly 20240514
+        int res = sysRemarkService.insertSysRemark(sysRemark);
+        // 因为求avg不会修改数据库，但是求avg需要先把add结果写数据库，所以使用此方法直接存res的状态
+        // 如果当前评论的状态为3，则表示是第三级表项，需要更新其父级评论的RemarkContent为平均分数
+        Long stati = sysRemark.getStat();
+        System.out.printf("stat is %d\n", stati);
+        if (stati != null && stati == 3) {
+            // 获取当前评论的parentId
+            Long parentId = sysRemark.getParentId();
+            if (parentId != null) {
+                // 调用获取平均值的方法，计算第二级表项的评论项的point均值
+                Double avgPoint = sysRemarkService.selectAveragePoint(parentId);
+                if (avgPoint != null) {
+                    // 获取父级评论的信息
+                    SysRemark parentRemark = sysRemarkService.selectSysRemarkByRemarkId(parentId);
+
+                    // 构造更新后的RemarkContent字符串格式，保留父级评论的其他内容
+                    String remarkContent = String.format("评分：%.2f", avgPoint);
+
+                    // 更新父级评论的RemarkContent为更新后的内容
+                    parentRemark.setRemarkContent(remarkContent);
+                    sysRemarkService.updateSysRemark(parentRemark);
+                }
+            }
+        }
+        return toAjax(res);
     }
 
     /**
@@ -314,6 +339,7 @@ public class SysRemarkController extends BaseController
             return success("举报成功");
         }
     }
+
     private boolean containsProhibitedWords(String content) {
         // 可以扩展此列表以包含更多不当关键词
         String[] prohibitedWords = {  "sb", "fw", "傻逼", "傻B", "操你", "你妈", "妈的", "垃圾", "白痴", "蠢货", "笨蛋", "智障",
@@ -326,4 +352,40 @@ public class SysRemarkController extends BaseController
         }
         return false;
     }
+
+    /**
+     * 获取第二级表项（课程+老师）的评论项的point均值
+     * by firefly 20240514
+     */
+    @PreAuthorize("@ss.hasPermi('system:remark:avgPoint')")
+    @GetMapping("/avgPoint/{remarkId}")
+    public AjaxResult getAveragePoint(@PathVariable Long remarkId) {
+        Double avgPoint = sysRemarkService.selectAveragePoint(remarkId);
+        return success(avgPoint);
+    }
+
+    /**
+     * 查询时间升序排列的评论列表
+     * by firefly 20240515
+     */
+    @PreAuthorize("@ss.hasPermi('system:remark:listByTimeASC')")
+    @GetMapping("/listByTimeASC")
+    public AjaxResult listByTimeASC(SysRemark sysRemark)
+    {
+        List<SysRemark> list = sysRemarkService.selectSysRemarkListByTimeASC(sysRemark);
+        return success(list);
+    }
+
+    /**
+     * 查询时间降序排列的评论列表
+     * by firefly 20240515
+     */
+    @PreAuthorize("@ss.hasPermi('system:remark:listByTimeDESC')")
+    @GetMapping("/listByTimeDESC")
+    public AjaxResult listByTimeDESC(SysRemark sysRemark)
+    {
+        List<SysRemark> list = sysRemarkService.selectSysRemarkListByTimeDESC(sysRemark);
+        return success(list);
+    }
+
 }

@@ -131,4 +131,36 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{remarkId}
         </foreach>
     </delete>
+
+    <!--
+        获取所有parentId为指定remarkId且stat为3的评论项的point均值
+        返回值：平均数
+        Made by firefly 20240514
+    -->
+    <select id="selectAveragePoint" parameterType="Long" resultType="double">
+        SELECT AVG(point) FROM sys_remark
+        WHERE parent_id = #{remarkId} AND stat = 3
+    </select>
+
+    <!--
+        获取时间升序排列的评论列表（最老评论）
+        返回值：列表
+        Made by firefly 20240515
+    -->
+    <select id="selectSysRemarkListByTimeASC" parameterType="String" resultMap="SysRemarkResult">
+        <include refid="selectSysRemarkVo"/>
+        ORDER BY create_time ASC
+    </select>
+
+    <!--
+        获取时间降序排列的评论列表（最新评论）
+        返回值：列表
+        Made by firefly 20240515
+    -->
+    <select id="selectSysRemarkListByTimeDESC" parameterType="String" resultMap="SysRemarkResult">
+        <include refid="selectSysRemarkVo"/>
+        ORDER BY create_time DESC
+    </select>
+
+
 </mapper>

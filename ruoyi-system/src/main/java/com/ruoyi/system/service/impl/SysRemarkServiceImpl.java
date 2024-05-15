@@ -113,4 +113,34 @@ public class SysRemarkServiceImpl implements ISysRemarkService
     {
         return sysRemarkMapper.checkSysRemarkExistence(sysRemark);
     }
+
+    /**
+     * 根据用户ID和父评论ID查询评论是否存在 by firefly 20240514
+     *
+     * @return point的平均数
+     */
+    public Double selectAveragePoint(Long remarkId) {
+        return sysRemarkMapper.selectAveragePoint(remarkId);
+    }
+
+    /**
+     * 时间升序排列评论 by firefly 20240515
+     *
+     * return 列表
+     */
+    public List<SysRemark> selectSysRemarkListByTimeASC(SysRemark sysRemark)
+    {
+        return sysRemarkMapper.selectSysRemarkListByTimeASC(sysRemark);
+    }
+
+    /**
+     * 时间降序排列评论 by firefly 20240515
+     *
+     * return 列表
+     */
+    public List<SysRemark> selectSysRemarkListByTimeDESC(SysRemark sysRemark)
+    {
+        return sysRemarkMapper.selectSysRemarkListByTimeDESC(sysRemark);
+    }
+
 }

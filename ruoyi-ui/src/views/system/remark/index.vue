@@ -54,6 +54,31 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
+    <el-row :gutter="10" class="mb8">
+    <!-- Newest Remarks Button -->
+      <el-col :span="1.5">
+        <el-button
+          type="info"
+          plain
+          icon="el-icon-sort"
+          size="mini"
+          @click="listAllRemarkByTimeDESC"
+          class="sorting-button"
+        >最新</el-button>
+      </el-col>
+      <!-- Oldest Remarks Button -->
+      <el-col :span="1.5">
+        <el-button
+          type="info"
+          plain
+          icon="el-icon-sort"
+          size="mini"
+          @click="listAllRemarkByTimeASC()"
+          class="sorting-button"
+        >最老</el-button>
+      </el-col>
+    </el-row>
+
     <!-- Remarks Table -->
     <el-table
       v-if="refreshTable"
@@ -104,7 +129,7 @@
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:remark:remove']"
           >删除</el-button>
-           <!-- Like Button -->
+          <!-- Like Button -->
           <el-button
             v-if="scope.row.reservedPort1 === 0 && scope.row.stat === 3"
             size="mini"
@@ -128,6 +153,33 @@
             @click="handleReport(scope.row)"
           >举报</el-button>
 
+          <!-- 最新按钮 by firefly 20240515 -->
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-sort"
+            @click="listRemarkByTimeDESCVUE(scope.row)"
+            class="sorting-button"
+          >最新</el-button>
+
+          <!-- 最老按钮 -->
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-sort"
+            @click="listRemarkByTimeASCVUE(scope.row)"
+            class="sorting-button"
+          >最老</el-button>
+
+          <!-- 最热 -->
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-sort"
+            @click="listRemarkByThumbDESCVUE(scope.row)"
+            class="sorting-button"
+          >最热</el-button>
+
         </template>
       </el-table-column>
     </el-table>
@@ -144,7 +196,7 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
-<!--    zmjjkk 2024/5/14-->
+    <!--  zmjjkk 2024/5/14-->
     <el-dialog :title="title" :visible.sync="open2" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="评论内容">
@@ -181,7 +233,7 @@
 </template>
 <script>
 //by jinx 20240514
-import { listRemark, getRemark, delRemark, addRemark, updateRemark, listRemarkByUsername, likeOrCancelLike,getLikeValue,reportRemark,getUserRole } from "@/api/system/remark";
+import { listRemark, getRemark, delRemark, addRemark, updateRemark, listRemarkByUsername, likeOrCancelLike, getLikeValue, reportRemark, getUserRole, listRemarkByTimeASC, listRemarkByTimeDESC  } from "@/api/system/remark";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
@@ -448,7 +500,68 @@ export default {
     toggleFilterMyRemarks() {
       this.filteringMyRemarks = !this.filteringMyRemarks;
       this.getList();
-    }
+    },
+
+    // by firefly 20240515
+    // 对于全局，向后端数据库发一条带有ORDER BY的SQL
+    // 点击最新按钮
+    listAllRemarkByTimeDESC() {
+      this.loading = true;
+      listRemarkByTimeDESC(this.queryParams).then(response => {
+        this.remarkList = this.handleTree(response.data, "remarkId", "parentId");
+        this.loading = false;
+        this.fetchLikeStatus(); // Fetch like status after getting remarkList
+      });
+    },
+
+    // 点击最老按钮
+    listAllRemarkByTimeASC() {
+      this.loading = true;
+      listRemarkByTimeASC(this.queryParams).then(response => {
+        this.remarkList = this.handleTree(response.data, "remarkId", "parentId");
+        this.loading = false;
+        this.fetchLikeStatus(); // Fetch like status after getting remarkList
+      });
+    },
+
+    // 对于具体项，直接在前端实现排序
+    // 点击最新按钮
+    listRemarkByTimeDESCVUE(row) {
+      // 获取当前行的子评论列表
+      const comments = row.children || [];
+
+      // 对子评论列表按照最新排序
+      comments.sort((a, b) => new Date(b.createTime) - new Date(a.createTime));
+
+      // 更新当前行的子评论列表
+      this.$set(row, 'children', comments);
+    },
+
+    // 点击最老按钮
+    listRemarkByTimeASCVUE(row) {
+      // 获取当前行的子评论列表
+      const comments = row.children || [];
+
+      // 对子评论列表按照最老排序
+      comments.sort((a, b) => new Date(a.createTime) - new Date(b.createTime));
+
+      // 更新当前行的子评论列表
+      this.$set(row, 'children', comments);
+    },
+
+    // 点击最热按钮
+    listRemarkByThumbDESCVUE(row) {
+      // 获取当前行的子评论列表
+      const comments = row.children || [];
+
+      // 对子评论列表按照热度排序
+      comments.sort((a, b) => new Date(b.likeCnt) - new Date(a.likeCnt));
+
+      // 更新当前行的子评论列表
+      this.$set(row, 'children', comments);
+    },
+
+    // firefly out
   }
 };
 </script>
