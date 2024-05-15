@@ -136,14 +136,14 @@
             type="text"
             icon="el-icon-star-off"
             @click="handleLike(scope.row)"
-          >点赞数：{{ scope.row.likeCnt }}，点赞</el-button>
+          >点赞数：{{ scope.row.likeCnt }}</el-button>
           <el-button
             v-if="scope.row.reservedPort1 === 1 && scope.row.stat === 3"
             size="mini"
             type="text"
             icon="el-icon-star-on"
             @click="handleCancelLike(scope.row)"
-          >点赞数：{{ scope.row.likeCnt }}，已赞</el-button>
+          >点赞数：{{ scope.row.likeCnt }}</el-button>
           <!-- 举报// by jinx 20240514 -->
           <el-button
             v-if="scope.row.stat === 3"
@@ -155,6 +155,7 @@
 
           <!-- 最新按钮 by firefly 20240515 -->
           <el-button
+            v-if="scope.row.stat ===2"
             size="mini"
             type="text"
             icon="el-icon-sort"
@@ -164,6 +165,7 @@
 
           <!-- 最老按钮 -->
           <el-button
+            v-if="scope.row.stat ===2"
             size="mini"
             type="text"
             icon="el-icon-sort"
@@ -173,6 +175,7 @@
 
           <!-- 最热 -->
           <el-button
+            v-if="scope.row.stat ===2"
             size="mini"
             type="text"
             icon="el-icon-sort"
