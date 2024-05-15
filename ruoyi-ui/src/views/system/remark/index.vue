@@ -129,21 +129,21 @@
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:remark:remove']"
           >删除</el-button>
-          <!-- Like Button -->
+          <!-- Like Button modified by firefly 20240515 -->
           <el-button
             v-if="scope.row.reservedPort1 === 0 && scope.row.stat === 3"
             size="mini"
             type="text"
             icon="el-icon-star-off"
             @click="handleLike(scope.row)"
-          >点赞</el-button>
+          >点赞数：{{ scope.row.likeCnt }}，点赞</el-button>
           <el-button
             v-if="scope.row.reservedPort1 === 1 && scope.row.stat === 3"
             size="mini"
             type="text"
             icon="el-icon-star-on"
             @click="handleCancelLike(scope.row)"
-          >已赞</el-button>
+          >点赞数：{{ scope.row.likeCnt }}，已赞</el-button>
           <!-- 举报// by jinx 20240514 -->
           <el-button
             v-if="scope.row.stat === 3"
@@ -179,7 +179,7 @@
             @click="listRemarkByThumbDESCVUE(scope.row)"
             class="sorting-button"
           >最热</el-button>
-
+          <!-- firefly out -->
         </template>
       </el-table-column>
     </el-table>
@@ -296,6 +296,7 @@ export default {
     handleLike(row) {
       likeOrCancelLike(row.remarkId).then(response => {
         if (response.code === 200) {
+          row.likeCnt += 1;  // Increment the like count, by firefly 20240515
           row.reservedPort1 = 1;
           this.$message.success("点赞成功");
         } else {
@@ -306,6 +307,7 @@ export default {
     handleCancelLike(row) {
       likeOrCancelLike(row.remarkId).then(response => {
         if (response.code === 200) {
+          row.likeCnt -= 1;  // Decrement the like count, by firefly 20240515
           row.reservedPort1 = 0;
           this.$message.success("取消点赞成功");
         } else {
@@ -555,7 +557,7 @@ export default {
       const comments = row.children || [];
 
       // 对子评论列表按照热度排序
-      comments.sort((a, b) => new Date(b.likeCnt) - new Date(a.likeCnt));
+      comments.sort((a, b) => b.likeCnt - a.likeCnt);
 
       // 更新当前行的子评论列表
       this.$set(row, 'children', comments);
