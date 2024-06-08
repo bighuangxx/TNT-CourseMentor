@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysRemarkMapper">
+
+    <resultMap type="SysRemark" id="SysRemarkResult">
+        <result property="remarkId"    column="remark_id"    />
+        <result property="parentId"    column="parent_id"    />
+        <result property="ancestors"    column="ancestors"    />
+        <result property="stat"    column="stat"    />
+        <result property="remarkName"    column="remark_name"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remarkContent"    column="remark_content"    />
+        <result property="point"    column="point"    />
+        <result property="likeCnt"    column="like_cnt"    />
+        <result property="reportCnt"    column="report_cnt"    />
+        <result property="reservedPort1"    column="reserved_port1"    />
+        <result property="reservedPort2"    column="reserved_port2"    />
+        <result property="reservedPort3"    column="reserved_port3"    />
+    </resultMap>
+
+    <sql id="selectSysRemarkVo">
+        select remark_id, parent_id, ancestors, stat, remark_name, del_flag, create_by, create_time, update_by, update_time, remark_content, point, like_cnt, report_cnt, reserved_port1, reserved_port2, reserved_port3 from sys_remark
+    </sql>
+
+    <select id="selectSysRemarkList" parameterType="SysRemark" resultMap="SysRemarkResult">
+        <include refid="selectSysRemarkVo"/>
+        <where>
+            <if test="remarkName != null  and remarkName != ''"> and remark_name like concat('%', #{remarkName}, '%')</if>
+        </where>
+    </select>
+
+    <select id="selectSysRemarkByRemarkId" parameterType="Long" resultMap="SysRemarkResult">
+        <include refid="selectSysRemarkVo"/>
+        where remark_id = #{remarkId}
+    </select>
+
+    <select id="selectSysRemarkListByUsername" parameterType="String" resultMap="SysRemarkResult">
+        <include refid="selectSysRemarkVo"/>
+        <where>
+            <if test="createBy != null and createBy != ''"> and create_by = #{createBy}</if>
+        </where>
+    </select>
+    <insert id="insertSysRemark" parameterType="SysRemark" useGeneratedKeys="true" keyProperty="remarkId">
+        insert into sys_remark
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="parentId != null">parent_id,</if>
+            <if test="ancestors != null">ancestors,</if>
+            <if test="stat != null">stat,</if>
+            <if test="remarkName != null">remark_name,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remarkContent != null">remark_content,</if>
+            <if test="point != null">point,</if>
+            <if test="likeCnt != null">like_cnt,</if>
+            <if test="reportCnt != null">report_cnt,</if>
+            <if test="reservedPort1 != null">reserved_port1,</if>
+            <if test="reservedPort2 != null">reserved_port2,</if>
+            <if test="reservedPort3 != null">reserved_port3,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="parentId != null">#{parentId},</if>
+            <if test="ancestors != null">#{ancestors},</if>
+            <if test="stat != null">#{stat},</if>
+            <if test="remarkName != null">#{remarkName},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remarkContent != null">#{remarkContent},</if>
+            <if test="point != null">#{point},</if>
+            <if test="likeCnt != null">#{likeCnt},</if>
+            <if test="reportCnt != null">#{reportCnt},</if>
+            <if test="reservedPort1 != null">#{reservedPort1},</if>
+            <if test="reservedPort2 != null">#{reservedPort2},</if>
+            <if test="reservedPort3 != null">#{reservedPort3},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysRemark" parameterType="SysRemark">
+        update sys_remark
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="ancestors != null">ancestors = #{ancestors},</if>
+            <if test="stat != null">stat = #{stat},</if>
+            <if test="remarkName != null">remark_name = #{remarkName},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remarkContent != null">remark_content = #{remarkContent},</if>
+            <if test="point != null">point = #{point},</if>
+            <if test="likeCnt != null">like_cnt = #{likeCnt},</if>
+            <if test="reportCnt != null">report_cnt = #{reportCnt},</if>
+            <if test="reservedPort1 != null">reserved_port1 = #{reservedPort1},</if>
+            <if test="reservedPort2 != null">reserved_port2 = #{reservedPort2},</if>
+            <if test="reservedPort3 != null">reserved_port3 = #{reservedPort3},</if>
+        </trim>
+        where remark_id = #{remarkId}
+    </update>
+
+    <delete id="deleteSysRemarkByRemarkId" parameterType="Long">
+        delete from sys_remark where remark_id = #{remarkId}
+    </delete>
+    <!--
+        查询是否存在符合条件的评论项
+        参数：
+            - createBy: 创建者
+            - parentId: 父评论ID
+        返回值：如果存在符合条件的评论项，返回1；否则返回0
+        Made by jinx 20240513
+    -->
+    <select id="checkSysRemarkExistence" parameterType="SysRemark" resultType="int">
+        SELECT COUNT(1) FROM sys_remark WHERE create_by = #{createBy} AND parent_id = #{parentId}
+    </select>
+
+
+    <delete id="deleteSysRemarkByRemarkIds" parameterType="String">
+        delete from sys_remark where remark_id in
+        <foreach item="remarkId" collection="array" open="(" separator="," close=")">
+            #{remarkId}
+        </foreach>
+    </delete>
+
+    <!--
+        获取所有parentId为指定remarkId且stat为3的评论项的point均值
+        返回值：平均数
+        Made by firefly 20240514
+    -->
+    <select id="selectAveragePoint" parameterType="Long" resultType="double">
+        SELECT AVG(point) FROM sys_remark
+        WHERE parent_id = #{remarkId} AND stat = 3
+    </select>
+
+    <!--
+        获取时间升序排列的评论列表（最老评论）
+        返回值：列表
+        Made by firefly 20240515
+    -->
+    <select id="selectSysRemarkListByTimeASC" parameterType="String" resultMap="SysRemarkResult">
+        <include refid="selectSysRemarkVo"/>
+        ORDER BY create_time ASC
+    </select>
+
+    <!--
+        获取时间降序排列的评论列表（最新评论）
+        返回值：列表
+        Made by firefly 20240515
+    -->
+    <select id="selectSysRemarkListByTimeDESC" parameterType="String" resultMap="SysRemarkResult">
+        <include refid="selectSysRemarkVo"/>
+        ORDER BY create_time DESC
+    </select>
+
+
+</mapper>
