@@ -1,7 +1,9 @@
 <h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">TNT课评宝</h1>
 <h4 align="center">基于SpringBoot+Vue前后端分离的Java课程评价平台</h4>
-## 平台简介
-
+平台简介
+<div align="center">
+  <img src="./TNTlog.jpg" alt="TNTLOGO">
+</div>
 TNT课评宝是一个课程评价平台，旨在为学生和教师提供一个公平、公正、有效的评价系统。
 
 # TNT 项目环境搭建指南
